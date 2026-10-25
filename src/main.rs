@@ -1,0 +1,72 @@
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
+use windows::Win32::System::Com::{
+    CLSCTX_ALL, COINIT_APARTMENTTHREADED, CoCreateInstance, CoInitializeEx, CoUninitialize,
+    IServiceProvider,
+};
+use windows::Win32::System::Variant::VARIANT;
+use windows::Win32::UI::Shell::{
+    CSIDL_DESKTOP, FOLDERVIEWMODE, FVM_LIST, FVM_SMALLICON, IFolderView2, IShellBrowser,
+    IShellWindows, SID_STopLevelBrowser, SWC_DESKTOP, SWFO_NEEDDISPATCH, ShellWindows,
+};
+use windows::core::{Interface, Result};
+
+macro_rules! dprint {
+    // 引数なし
+    () => {
+        println!();
+    };
+    // フォーマット文字と可変長引数を受け取る
+    ($fmt:expr $(, $arg:expr)* $(,)?) => {
+        println!($fmt $(, $arg)*);
+    };
+}
+
+fn co_initialize() -> Result<()> {
+    unsafe { CoInitializeEx(None, COINIT_APARTMENTTHREADED).ok() }
+}
+
+fn co_uninitialize() {
+    unsafe { CoUninitialize() }
+}
+
+fn toggle_desktop_icon_view() -> Result<()> {
+    unsafe {
+        let shell_windows: IShellWindows = CoCreateInstance(&ShellWindows, None, CLSCTX_ALL)?;
+        let loc = VARIANT::from(CSIDL_DESKTOP);
+        let empty = VARIANT::default();
+        let mut hwnd = 0i32;
+        let disp =
+            shell_windows.FindWindowSW(&loc, &empty, SWC_DESKTOP, &mut hwnd, SWFO_NEEDDISPATCH)?;
+
+        let sp: IServiceProvider = disp.cast()?;
+        let browser: IShellBrowser = sp.QueryService(&SID_STopLevelBrowser)?;
+        let view = browser.QueryActiveShellView()?;
+        let fv: IFolderView2 = view.cast()?;
+
+        let mut mode = FOLDERVIEWMODE(0);
+        let mut icon_size = 0i32;
+        fv.GetViewModeAndIconSize(&mut mode, &mut icon_size)?;
+        dprint!("before: mode={} icon_size={}", mode.0, icon_size);
+
+        let (view_mode, new_icon_size) = if mode.0 == FVM_LIST.0 {
+            (FVM_SMALLICON, 32)
+        } else {
+            (FVM_LIST, 16)
+        };
+        fv.SetViewModeAndIconSize(view_mode, new_icon_size)?;
+
+        fv.GetViewModeAndIconSize(&mut mode, &mut icon_size)?;
+        dprint!("after:  mode={} icon_size={}", mode.0, icon_size);
+    }
+    Ok(())
+}
+
+fn main() -> Result<()> {
+    co_initialize()?;
+    toggle_desktop_icon_view()?;
+
+    // COM オブジェクトを drop して解放後に CoUninitialize() すること
+    co_uninitialize();
+    Ok(())
+}

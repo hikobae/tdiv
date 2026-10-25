@@ -1,0 +1,24 @@
+[package]
+name = "tdiv"
+description = "Toggle desktop icon view on Windows"
+version = "0.1.0"
+edition = "2024"
+
+[package.metadata.winresource]
+LegalCopyright = "(C) TAKAHASHI Satoshi 2026"
+
+[profile.release]
+opt-level = "s"
+debug = "full"
+lto = true
+codegen-units = 1
+panic = "abort"
+split-debuginfo = "packed"
+strip = "symbols"
+incremental = true
+
+[dependencies]
+windows = { version = "0.62.2", features = ["Win32_Foundation", "Win32_System_Com", "Win32_System_Ole", "Win32_System_Variant", "Win32_UI_Controls", "Win32_UI_Shell", "Win32_UI_Shell_Common", "Win32_UI_WindowsAndMessaging"] }
+
+[build-dependencies]
+winresource = "0.1.34"
