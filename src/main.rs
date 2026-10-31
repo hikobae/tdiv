@@ -6,8 +6,8 @@ use windows::Win32::System::Com::{
 };
 use windows::Win32::System::Variant::VARIANT;
 use windows::Win32::UI::Shell::{
-    CSIDL_DESKTOP, FOLDERVIEWMODE, FVM_LIST, FVM_SMALLICON, IFolderView2, IShellBrowser,
-    IShellWindows, SID_STopLevelBrowser, SWC_DESKTOP, SWFO_NEEDDISPATCH, ShellWindows,
+    CSIDL_DESKTOP, FVM_LIST, FVM_SMALLICON, IFolderView2, IShellBrowser, IShellWindows,
+    SID_STopLevelBrowser, SWC_DESKTOP, SWFO_NEEDDISPATCH, ShellWindows,
 };
 use windows::core::{Interface, Result};
 
@@ -46,7 +46,7 @@ fn toggle_desktop_icon_view() -> Result<()> {
         let view = browser.QueryActiveShellView()?;
         let fv: IFolderView2 = view.cast()?;
 
-        let mut mode = FOLDERVIEWMODE(0);
+        let mut mode = Default::default();
         let mut icon_size = 0i32;
         fv.GetViewModeAndIconSize(&mut mode, &mut icon_size)?;
         dprint!("before: mode={} icon_size={}", mode.0, icon_size);
