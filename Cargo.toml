@@ -1,8 +1,12 @@
 [package]
 name = "tdiv"
-description = "Toggle desktop icon view on Windows"
 version = "0.1.0"
+description = "Toggle desktop icon view on Windows"
+authors = ["TAKAHASHI Satoshi <hikobae@gmail.com>"]
 edition = "2024"
+repository = "https://github.com/hikobae/tdiv"
+license = "MIT"
+readme = "README.md"
 
 [package.metadata.winresource]
 LegalCopyright = "(C) TAKAHASHI Satoshi 2026"
