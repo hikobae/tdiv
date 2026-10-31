@@ -22,12 +22,18 @@ macro_rules! dprint {
     };
 }
 
-fn co_initialize() -> Result<()> {
-    unsafe { CoInitializeEx(None, COINIT_APARTMENTTHREADED).ok() }
+struct ComInitializer;
+impl ComInitializer {
+    fn new() -> Result<Self> {
+        unsafe { CoInitializeEx(None, COINIT_APARTMENTTHREADED).ok()? }
+        Ok(Self)
+    }
 }
 
-fn co_uninitialize() {
-    unsafe { CoUninitialize() }
+impl Drop for ComInitializer {
+    fn drop(&mut self) {
+        unsafe { CoUninitialize() }
+    }
 }
 
 fn toggle_desktop_icon_view() -> Result<()> {
@@ -63,10 +69,6 @@ fn toggle_desktop_icon_view() -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    co_initialize()?;
-    toggle_desktop_icon_view()?;
-
-    // COM オブジェクトを drop して解放後に CoUninitialize() すること
-    co_uninitialize();
-    Ok(())
+    let _com = ComInitializer::new()?;
+    toggle_desktop_icon_view()
 }
