@@ -12,13 +12,9 @@ use windows::Win32::UI::Shell::{
 use windows::core::{Interface, Result};
 
 macro_rules! dprint {
-    // 引数なし
-    () => {
-        println!();
-    };
-    // フォーマット文字と可変長引数を受け取る
-    ($fmt:expr $(, $arg:expr)* $(,)?) => {
-        println!($fmt $(, $arg)*);
+    ($($arg:tt)*) => {
+        #[cfg(debug_assertions)]
+        { println!($($arg)*); }
     };
 }
 
