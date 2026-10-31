@@ -35,7 +35,7 @@ impl Drop for ComInitializer {
 fn toggle_desktop_icon_view() -> Result<()> {
     unsafe {
         let shell_windows: IShellWindows = CoCreateInstance(&ShellWindows, None, CLSCTX_ALL)?;
-        let loc = VARIANT::from(CSIDL_DESKTOP);
+        let loc = VARIANT::from(CSIDL_DESKTOP as i32);
         let empty = VARIANT::default();
         let mut hwnd = 0i32;
         let disp =
