@@ -9,7 +9,8 @@ use windows::Win32::UI::Shell::{
     CSIDL_DESKTOP, FVM_LIST, FVM_SMALLICON, IFolderView2, IShellBrowser, IShellWindows,
     SID_STopLevelBrowser, SWC_DESKTOP, SWFO_NEEDDISPATCH, ShellWindows,
 };
-use windows::core::{Interface, Result};
+use windows::core::Interface;
+use windows::core::Result as WinResult;
 
 macro_rules! dprint {
     ($($arg:tt)*) => {
@@ -20,7 +21,7 @@ macro_rules! dprint {
 
 struct ComInitializer;
 impl ComInitializer {
-    fn new() -> Result<Self> {
+    fn new() -> WinResult<Self> {
         unsafe { CoInitializeEx(None, COINIT_APARTMENTTHREADED).ok()? }
         Ok(Self)
     }
@@ -32,7 +33,7 @@ impl Drop for ComInitializer {
     }
 }
 
-fn toggle_desktop_icon_view() -> Result<()> {
+fn toggle_desktop_icon_view() -> WinResult<()> {
     unsafe {
         let shell_windows: IShellWindows = CoCreateInstance(&ShellWindows, None, CLSCTX_ALL)?;
         let loc = VARIANT::from(CSIDL_DESKTOP as i32);
@@ -64,7 +65,7 @@ fn toggle_desktop_icon_view() -> Result<()> {
     Ok(())
 }
 
-fn main() -> Result<()> {
+fn main() -> WinResult<()> {
     let _com = ComInitializer::new()?;
     toggle_desktop_icon_view()
 }
