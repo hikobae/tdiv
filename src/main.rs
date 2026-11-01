@@ -59,8 +59,11 @@ fn toggle_desktop_icon_view() -> WinResult<()> {
         };
         fv.SetViewModeAndIconSize(view_mode, new_icon_size)?;
 
-        fv.GetViewModeAndIconSize(&mut mode, &mut icon_size)?;
-        dprint!("after:  mode={} icon_size={}", mode.0, icon_size);
+        #[cfg(debug_assertions)]
+        {
+            fv.GetViewModeAndIconSize(&mut mode, &mut icon_size)?;
+            dprint!("after:  mode={} icon_size={}", mode.0, icon_size);
+        }
     }
     Ok(())
 }
