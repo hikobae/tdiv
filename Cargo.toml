@@ -7,6 +7,7 @@ edition = "2024"
 repository = "https://github.com/hikobae/tdiv"
 license = "MIT"
 readme = "README.md"
+publish = false
 
 [package.metadata.winresource]
 LegalCopyright = "(C) TAKAHASHI Satoshi 2026"

@@ -44,7 +44,7 @@ jobs:
       - name: Package
         run: |
           $name = "tdiv-$env:GITHUB_REF_NAME-windows-x86_64.zip"
-          Compress-Archive -Path target/release/tdiv.exe, README.md, LICENSE -DestinationPath $name -Force
+          Compress-Archive -Path target/release/tdiv.exe, README.md, LICENSE, LICENSE-THIRD-PARTY.md -DestinationPath $name -Force
           $hash = (Get-FileHash $name -Algorithm SHA256).Hash.ToLower()
           "$hash  $name" | Out-File "$name.sha256" -Encoding ascii
           "ASSET=$name" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
