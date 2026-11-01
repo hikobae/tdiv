@@ -52,7 +52,7 @@ fn toggle_desktop_icon_view() -> WinResult<()> {
         fv.GetViewModeAndIconSize(&mut mode, &mut icon_size)?;
         dprint!("before: mode={} icon_size={}", mode.0, icon_size);
 
-        let (view_mode, new_icon_size) = if mode.0 == FVM_LIST.0 {
+        let (view_mode, new_icon_size) = if mode == FVM_LIST {
             (FVM_SMALLICON, 32)
         } else {
             (FVM_LIST, 16)
