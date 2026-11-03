@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - '*.*.*'
+      - 'v*.*.*'
 
 permissions:
   contents: write
@@ -15,39 +16,63 @@ jobs:
   release:
     name: Build and Release
     runs-on: windows-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Rust
-        run: |
-          rustup toolchain install stable --profile minimal
-          rustup default stable
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Cache cargo
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry/index
-            ~/.cargo/registry/cache
-            ~/.cargo/git/db
-            target
-          key: ${{ runner.os }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-release-
+        uses: Swatinem/rust-cache@v2
+
+      - name: Validate tag format
+        shell: powershell
+        run: |
+          if ($env:GITHUB_REF_NAME -notmatch '^v?\d+\.\d+\.\d+$') {
+            throw "Invalid tag format: $env:GITHUB_REF_NAME"
+          }
 
       - name: Test
-        run: cargo test --locked
+        run: cargo test --locked --all-targets
 
       - name: Build
         run: cargo build --release --locked
 
-      - name: Package
+      - name: Validate build artifact
+        shell: powershell
         run: |
-          $name = "tdiv-$env:GITHUB_REF_NAME-windows-x86_64.zip"
-          Compress-Archive -Path target/release/tdiv.exe, README.md, LICENSE, LICENSE-THIRD-PARTY.md -DestinationPath $name -Force
+          $exe = "target/release/tdiv.exe"
+          if (!(Test-Path $exe)) {
+            throw "Binary not found: $exe"
+          }
+
+          $size = (Get-Item $exe).Length
+          if ($size -le 0) {
+            throw "Binary is empty: $exe"
+          }
+
+      - name: Package
+        shell: powershell
+        run: |
+          $required = @(
+            "target/release/tdiv.exe",
+            "README.md",
+            "LICENSE",
+            "LICENSE-THIRD-PARTY.md"
+          )
+
+          foreach ($file in $required) {
+            if (!(Test-Path $file)) {
+              throw "Missing required asset: $file"
+            }
+          }
+
+          $name = "tdiv-${env:GITHUB_REF_NAME}-windows-x86_64.zip"
+          Compress-Archive -Path $required -DestinationPath $name -Force
           $hash = (Get-FileHash $name -Algorithm SHA256).Hash.ToLower()
           "$hash  $name" | Out-File "$name.sha256" -Encoding ascii
-          "ASSET=$name" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+          "ASSET=$name" | Out-File -Append -Encoding ascii $env:GITHUB_ENV
 
       - name: Publish release
         env:
