@@ -1,10 +1,14 @@
 # Third Party Licenses
 
+This file lists only the third-party software that is included in this project's source code and distributed binaries.
+
 ## Overview
 
-- MIT License (19)
-- Unicode License v3 (1)
+- [MIT License](#MIT-0) (15)
+- [MIT License](#MIT-1) (4)
+- [Unicode License v3](#Unicode-3.0-2) (1)
 
+<a id="MIT-0"></a>
 ## MIT License
 
 `MIT`
@@ -27,7 +31,7 @@
 - [windows-threading 0.2.1](https://github.com/microsoft/windows-rs)
 - [windows 0.62.2](https://github.com/microsoft/windows-rs)
 
-```
+````
 MIT License
 
 Copyright (c) <year> <copyright holders>
@@ -47,8 +51,9 @@ EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-```
+````
 
+<a id="MIT-1"></a>
 ## MIT License
 
 `MIT`
@@ -60,7 +65,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 - [syn 2.0.119](https://github.com/dtolnay/syn)
 - [unicode-ident 1.0.27](https://github.com/dtolnay/unicode-ident)
 
-```
+````
 Permission is hereby granted, free of charge, to any
 person obtaining a copy of this software and associated
 documentation files (the "Software"), to deal in the
@@ -85,8 +90,9 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
-```
+````
 
+<a id="Unicode-3.0-2"></a>
 ## Unicode License v3
 
 `Unicode-3.0`
@@ -95,7 +101,7 @@ DEALINGS IN THE SOFTWARE.
 
 - [unicode-ident 1.0.27](https://github.com/dtolnay/unicode-ident)
 
-```
+````
 UNICODE LICENSE V3
 
 COPYRIGHT AND PERMISSION NOTICE
@@ -136,5 +142,5 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in these Data Files or Software without prior written
 authorization of the copyright holder.
 
-```
+````
 

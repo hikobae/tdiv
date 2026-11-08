@@ -1,12 +1,16 @@
 # Third Party Licenses
 
+{{#if licenses}}
+This file lists only the third-party software that is included in this project's source code and distributed binaries.
+
 ## Overview
 
-{{#each overview}}
-- {{{name}}} ({{count}})
+{{#each licenses}}
+- [{{{name}}}](#{{{id}}}-{{@index}}) ({{len used_by}})
 {{/each}}
 
 {{#each licenses}}
+<a id="{{{id}}}-{{@index}}"></a>
 ## {{{name}}}
 
 `{{{id}}}`
@@ -17,8 +21,12 @@
 - [{{{crate.name}}} {{{crate.version}}}]({{#if crate.repository}}{{{crate.repository}}}{{else}}https://crates.io/crates/{{{crate.name}}}{{/if}})
 {{/each}}
 
-```
+````
 {{{text}}}
-```
+````
 
 {{/each}}
+{{else}}
+This project does not include or distribute any third-party software
+in its source code or binaries.
+{{/if}}
