@@ -4,10 +4,9 @@ on:
   push:
     tags:
       - '*.*.*'
-      - 'v*.*.*'
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   CARGO_TERM_COLOR: always
@@ -17,46 +16,43 @@ jobs:
     name: Build and Release
     runs-on: windows-latest
     timeout-minutes: 30
+    permissions:
+      contents: write
+    env:
+      TARGET: x86_64-pc-windows-msvc
+      ARCHIVE: tdiv-${{ github.ref_name }}-windows-x86_64.zip
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache cargo
-        uses: Swatinem/rust-cache@v2
-
       - name: Validate tag format
-        shell: powershell
+        shell: pwsh
         run: |
           if ($env:GITHUB_REF_NAME -notmatch '^v?\d+\.\d+\.\d+$') {
             throw "Invalid tag format: $env:GITHUB_REF_NAME"
           }
 
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ env.TARGET }}
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
       - name: Test
-        run: cargo test --locked --all-targets
+        run: cargo test --locked
 
       - name: Build
-        run: cargo build --release --locked
-
-      - name: Validate build artifact
-        shell: powershell
-        run: |
-          $exe = "target/release/tdiv.exe"
-          if (!(Test-Path $exe)) {
-            throw "Binary not found: $exe"
-          }
-
-          $size = (Get-Item $exe).Length
-          if ($size -le 0) {
-            throw "Binary is empty: $exe"
-          }
+        run: cargo build --release --locked --target ${{ env.TARGET }}
 
       - name: Package
-        shell: powershell
+        shell: pwsh
         run: |
+          $exe = "target/$env:TARGET/release/tdiv.exe"
           $required = @(
-            "target/release/tdiv.exe",
+            $exe,
             "README.md",
             "LICENSE",
             "LICENSE-THIRD-PARTY.md"
@@ -67,15 +63,19 @@ jobs:
               throw "Missing required asset: $file"
             }
           }
+          if ((Get-Item $exe).Length -le 0) {
+            throw "Binary is empty: $exe"
+          }
 
-          $name = "tdiv-${env:GITHUB_REF_NAME}-windows-x86_64.zip"
-          Compress-Archive -Path $required -DestinationPath $name -Force
-          $hash = (Get-FileHash $name -Algorithm SHA256).Hash.ToLower()
-          "$hash  $name" | Out-File "$name.sha256" -Encoding ascii
-          "ASSET=$name" | Out-File -Append -Encoding ascii $env:GITHUB_ENV
+          Compress-Archive -Path $required -DestinationPath $env:ARCHIVE -Force
+          $hash = (Get-FileHash $env:ARCHIVE -Algorithm SHA256).Hash.ToLower()
+          "$hash  $env:ARCHIVE" | Out-File "$env:ARCHIVE.sha256" -Encoding ascii
 
       - name: Publish release
+        shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release create $env:GITHUB_REF_NAME $env:ASSET "$env:ASSET.sha256" --title "Release $env:GITHUB_REF_NAME" --generate-notes
+        run: >
+          gh release create $env:GITHUB_REF_NAME
+          $env:ARCHIVE "$env:ARCHIVE.sha256"
+          --verify-tag --title "Release $env:GITHUB_REF_NAME" --generate-notes

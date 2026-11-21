@@ -11,7 +11,7 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   CARGO_TERM_COLOR: always
@@ -19,16 +19,12 @@ env:
 jobs:
   audit:
     name: Security Audit
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache cargo
-        uses: Swatinem/rust-cache@v2
+        with:
+          persist-credentials: false
 
       - name: Install cargo-audit
         uses: taiki-e/install-action@v2
@@ -40,16 +36,15 @@ jobs:
 
   licenses:
     name: Third-party Licenses
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache cargo
-        uses: Swatinem/rust-cache@v2
 
       - name: Install cargo-about
         uses: taiki-e/install-action@v2
@@ -60,7 +55,12 @@ jobs:
         run: cargo about generate --workspace about.hbs --output-file LICENSE-THIRD-PARTY.md
 
       - name: Ensure generated file is committed
-        run: git diff --exit-code -- LICENSE-THIRD-PARTY.md
+        run: |
+          git add -N LICENSE-THIRD-PARTY.md
+          git diff --exit-code -- LICENSE-THIRD-PARTY.md || {
+            echo "::error::LICENSE-THIRD-PARTY.md is out of date. Run: cargo about generate --workspace about.hbs --output-file LICENSE-THIRD-PARTY.md"
+            exit 1
+          }
 
   test:
     name: Test Suite
@@ -68,6 +68,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -76,14 +78,16 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Run tests
-        run: cargo test --locked --all-targets --verbose
+        run: cargo test --locked --verbose
 
   fmt:
     name: Rustfmt
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -99,6 +103,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -112,11 +118,13 @@ jobs:
         run: cargo clippy --locked --all-targets --all-features -- -D warnings
 
   build:
-    name: Build
+    name: Build (release)
     runs-on: windows-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
